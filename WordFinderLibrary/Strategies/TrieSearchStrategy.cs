@@ -4,6 +4,17 @@ using WordFinderLibrary.TrieNode;
 
 namespace WordFinderLibrary.Strategies
 {
+    /// <summary>
+    /// TrieSearchStrategy uses a Trie data structure combined with iterative DFS to efficiently find words in a matrix.
+    /// 
+    /// Time Complexity:
+    /// - Building the Trie: O(W * L), where W is the number of words and L is the average length of the words.
+    /// - Searching the matrix: O(M * N * L), where M is the number of rows, N is the number of columns, and L is the length of the longest word.
+    /// 
+    /// Memory Complexity:
+    /// - Trie storage: O(W * L), where W is the number of words and L is the average length of the words.
+    /// - DFS stack: O(L), where L is the length of the longest word.
+    /// </summary>
     public class TrieSearchStrategy : ISearchStrategy
     {
         private Trie _trie = new Trie();
@@ -14,30 +25,38 @@ namespace WordFinderLibrary.Strategies
             [1, 0], // Move down
             // [-1, 0] // Move up
         ];
-        private readonly HashSet<string> _wordsInTrie = [];
+        private readonly HashSet<string> _wordsInTrie = new HashSet<string>();
 
-        private void DfsSearch(char[,] matrix, TrieNode.TrieNode trie, int i, int j)
+        private void IterativeDfsSearch(char[,] matrix, TrieNode.TrieNode trie, int i, int j)
         {
-            if (i < 0 || j < 0 || i >= matrix.GetLength(0) || j >= matrix.GetLength(1)) return;
+            var stack = new Stack<(int, int, TrieNode.TrieNode)>();
+            stack.Push((i, j, trie));
 
-            var c = matrix[i, j];
-            if (c == '#' || !trie.Children.ContainsKey(c)) return;
-
-            trie = trie.Children[c];
-
-            if (trie.Word != null)
+            while (stack.Count > 0)
             {
-                _wordsInTrie.Add(trie.Word);
+                var (x, y, currentTrie) = stack.Pop();
+
+                if (x < 0 || y < 0 || x >= matrix.GetLength(0) || y >= matrix.GetLength(1)) continue;
+
+                var c = matrix[x, y];
+                if (c == '#' || !currentTrie.Children.ContainsKey(c)) continue;
+
+                currentTrie = currentTrie.Children[c];
+
+                if (currentTrie.Word != null)
+                {
+                    _wordsInTrie.Add(currentTrie.Word);
+                }
+
+                matrix[x, y] = '#'; // Mark as visited
+
+                foreach (var dir in _directions)
+                {
+                    stack.Push((x + dir[0], y + dir[1], currentTrie));
+                }
+
+                matrix[x, y] = c; // Revert back to original character
             }
-
-            matrix[i, j] = '#'; // Mark as visited
-
-            foreach (var dir in _directions)
-            {
-                DfsSearch(matrix, trie, i + dir[0], j + dir[1]);
-            }
-
-            matrix[i, j] = c; // Revert back to original character
         }
 
         public Dictionary<string, int> FindWords(char[,] matrix, IList<string> words)
@@ -47,13 +66,14 @@ namespace WordFinderLibrary.Strategies
             {
                 _trie.Insert(word);
             }
+
             var rows = matrix.GetLength(0);
             var cols = matrix.GetLength(1);
             for (var i = 0; i < rows; i++)
             {
                 for (var j = 0; j < cols; j++)
                 {
-                    DfsSearch(matrix, _trie.GetRoot(), i, j);
+                    IterativeDfsSearch(matrix, _trie.GetRoot(), i, j);
                 }
             }
 
