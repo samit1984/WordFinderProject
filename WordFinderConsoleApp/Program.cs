@@ -31,7 +31,7 @@ namespace WordFinderConsoleApp
                 "daveuva",
                 "lizwxya"
             };
-
+            
             // Define the list of words to search for
             var words = new List<string> { "alex", "john", "mike", "sara", "dave", "liz", "samit" };
 
@@ -51,6 +51,7 @@ namespace WordFinderConsoleApp
             wordFinder.SetSearchStrategy(trieStrategy);
             var foundWordsTrie = wordFinder.Find(words);
             Console.WriteLine("Trie Strategy: " + string.Join(", ", foundWordsTrie));
+            Console.ReadKey();
         }
     }
 }

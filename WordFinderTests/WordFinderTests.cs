@@ -222,5 +222,38 @@ namespace WordFinderTests
             var foundWords = wordFinder.Find(words).ToList();
             CollectionAssert.AreEquivalent(new List<string> { "alex", "john", "mike", "sara", "dave", "liz" }, foundWords);
         }
+
+        [TestMethod]
+        public void TestSmallBoardWithLongWord()
+        {
+            // Test the scenario where the board is small and the word is longer than the board dimensions
+            var matrix = new List<string>
+            {
+                "aa"
+            };
+
+            var wordstream = new List<string> { "aaa" };
+
+            var wordFinder = new WordFinder(matrix);
+            var result = wordFinder.Find(wordstream).ToList();
+
+            var expectedResults = new List<string> { };
+            CollectionAssert.AreEquivalent(expectedResults, result);
+
+
+            // Test with default strategy
+            result = wordFinder.Find(wordstream).ToList();
+            CollectionAssert.AreEquivalent(expectedResults, result);
+
+            // Test with DFS strategy
+            wordFinder.SetSearchStrategy(SearchStrategyFactory.CreateStrategy(typeof(DFSSearchStrategy)));
+            result = wordFinder.Find(wordstream).ToList();
+            CollectionAssert.AreEquivalent(expectedResults, result);
+
+            // Test with Trie strategy
+            wordFinder.SetSearchStrategy(SearchStrategyFactory.CreateStrategy(typeof(TrieSearchStrategy)));
+            result = wordFinder.Find(wordstream).ToList();
+            CollectionAssert.AreEquivalent(expectedResults, result);
+        }
     }
 }
